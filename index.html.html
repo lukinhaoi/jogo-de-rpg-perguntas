@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Aventura Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        
+        .container {
+            max-width: 100vw;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(22, 33, 62, 0.9);
+            padding: 15px;
+            border-bottom: 2px solid #e74c3c;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .player-name {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .status-bar {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 16px;
+        }
+        
+        .status-label {
+            min-width: 35px;
+            font-size: 18px;
+        }
+        
+        .bar-container {
+            flex: 1;
+            height: 25px;
+            background: #2c2c54;
+            border-radius: 15px;
+            margin: 0 10px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .bar-fill {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.3s ease;
+        }
+        
+        .vida-bar { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+        .exp-bar { background: linear-gradient(90deg, #9b59b6, #8e44ad); }
+        
+        .status-text {
+            min-width: 60px;
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .stat {
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .game-area {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .enemy-card {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+            border: 3px solid rgba(255,255,255,0.1);
+            animation: enemyAppear 0.5s ease-out;
+        }
+        
+        @keyframes enemyAppear {
+            from { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+            to { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        .enemy-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .action-button {
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.1);
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .attack-btn { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .potion-btn { background: linear-gradient(135deg, #27ae60, #229954); }
+        .explore-btn { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .rest-btn { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .run-btn { background: linear-gradient(135deg, #95a5a6, #7f8c8d); }
+        
+        .action-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        
+        .log-container {
+            background: rgba(22, 33, 62, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: auto;
+            max-height: 200px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        .log-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ecf0f1;
+        }
+        
+        .log-content {
+            max-height: 140px;
+            overflow-y: auto;
+        }
+        
+        .log-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            font-size: 14px;
+            border-left: 4px solid #3498db;
+            animation: logAppear 0.3s ease-out;
+        }
+        
+        @keyframes logAppear {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .menu-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .game-title {
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 50px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            from { text-shadow: 3px 3px 6px rgba(0,0,0,0.5); }
+            to { text-shadow: 0 0 20px #3498db, 3px 3px 6px rgba(0,0,0,0.5); }
+        }
+        
+        .start-button {
+            padding: 30px 60px;
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(231, 76, 60, 0.4);
+            transition: all 0.3s ease;
+            border: 4px solid rgba(255,255,255,0.1);
+        }
+        
+        .start-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.6);
+        }
+        
+        .hidden { display: none; }
+        
+        /* Scrollbar personalizada */
+        .log-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .log-content::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        
+        .log-content::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Tela do Menu -->
+        <div id="menuScreen" class="menu-screen">
+            <h1 class="game-title">⚔️ RPG AVENTURA ⚔️</h1>
+            <button class="start-button" onclick="iniciarJogo()">🚀 INICIAR JOGO</button>
+        </div>
+
+        <!-- Tela do Jogo -->
+        <div id="gameScreen" class="hidden">
+            <!-- Header com status -->
+            <div class="header">
+                <div class="player-name" id="playerName">👤 Herói - Nível 1</div>
+                
+                <div class="status-bar">
+                    <span class="status-label">❤️</span>
+                    <div class="bar-container">
+                        <div class="bar-fill vida-bar" id="vidaBar" style="width: 100%"></div>
+                    </div>
+                    <span class="status-text" id="vidaText">100/100</span>
+                </div>
+                
+                <div class="status-bar">
+                    <span class="status-label">🔮</span>
+                    <div class="bar-container">
+                        <div class="bar-fill exp-bar" id="expBar" style="width: 0%"></div>
+                    </div>
+                    <span class="status-text" id="expText">0/100</span>
+                </div>
+                
+                <div class="stats-row">
+                    <span class="stat">⚔️ <span id="ataqueText">20</span></span>
+                    <span class="stat">🛡️ <span id="defesaText">10</span></span>
+                    <span class="stat">💰 <span id="ouroText">50</span></span>
+                    <span class="stat">🧪 <span id="pocoesText">3</span></span>
+                </div>
+            </div>
+
+            <!-- Área do jogo -->
+            <div class="game-area">
+                <!-- Card do inimigo -->
+                <div id="enemyCard" class="enemy-card hidden">
+                    <div class="enemy-name" id="enemyName">👹 Goblin</div>
+                    <div class="status-bar">
+                        <span class="status-label">❤️</span>
+                        <div class="bar-container">
+                            <div class="bar-fill vida-bar" id="enemyVidaBar" style="width: 100%"></div>
+                        </div>
+                        <span class="status-text" id="enemyVidaText">30/30</span>
+                    </div>
+                </div>
+
+                <!-- Botões de ação -->
+                <div class="action-buttons" id="actionButtons">
+                    <button class="action-button explore-btn" onclick="explorar()">🗺️ EXPLORAR</button>
+                    <button class="action-button rest-btn" onclick="descansar()">😴 DESCANSAR</button>
+                </div>
+
+                <!-- Botões de combate -->
+                <div class="action-buttons hidden" id="combatButtons">
+                    <button class="action-button attack-btn" onclick="atacar()">⚔️ ATACAR</button>
+                    <button class="action-button potion-btn" onclick="usarPocao()">🧪 POÇÃO</button>
+                    <button class="action-button run-btn" onclick="fugir()">🏃 FUGIR</button>
+                </div>
+
+                <!-- Log de eventos -->
+                <div class="log-container">
+                    <div class="log-title">📜 LOG DE EVENTOS</div>
+                    <div class="log-content" id="logContent">
+                        <div class="log-item">🎮 Bem-vindo à sua aventura!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Classes do jogo
+        class Jogador {
+            constructor() {
+                this.nome = "Herói";
+                this.vida = 100;
+                this.vidaMaxima = 100;
+                this.ataque = 20;
+                this.defesa = 10;
+                this.nivel = 1;
+                this.experiencia = 0;
+                this.experienciaNecessaria = 100;
+                this.ouro = 50;
+                this.pocoes = 3;
+            }
+
+            atacar() {
+                return Math.max(1, Math.floor(Math.random() * 11) + this.ataque - 5);
+            }
+
+            defender(dano) {
+                const danoRecebido = Math.max(1, dano - this.defesa);
+                this.vida -= danoRecebido;
+                if (this.vida < 0) this.vida = 0;
+                return danoRecebido;
+            }
+
+            ganharExperiencia(exp) {
+                this.experiencia += exp;
+                if (this.experiencia >= this.experienciaNecessaria) {
+                    this.subirNivel();
+                    return true;
+                }
+                return false;
+            }
+
+            subirNivel() {
+                this.nivel++;
+                this.experiencia -= this.experienciaNecessaria;
+                this.experienciaNecessaria = Math.floor(this.experienciaNecessaria * 1.5);
+                this.vidaMaxima += 20;
+                this.vida = this.vidaMaxima;
+                this.ataque += 5;
+                this.defesa += 3;
+            }
+
+            usarPocao() {
+                if (this.pocoes > 0 && this.vida < this.vidaMaxima) {
+                    const cura = Math.floor(Math.random() * 21) + 30;
+                    this.vida = Math.min(this.vidaMaxima, this.vida + cura);
+                    this.pocoes--;
+                    return cura;
+                }
+                return 0;
+            }
+        }
+
+        class Inimigo {
+            constructor(nome, vida, ataque, defesa, exp, ouro) {
+                this.nome = nome;
+                this.vida = vida;
+                this.vidaMaxima = vida;
+                this.ataque = ataque;
+                this.defesa = defesa;
+                this.expDrop = exp;
+                this.ouroDrop = ouro;
+            }
+
+            atacar() {
+                return Math.max(1, Math.floor(Math.random() * 7) + this.ataque - 3);
+            }
+
+            defender(dano) {
+                const danoRecebido = Math.max(1, dano - this.defesa);
+                this.vida -= danoRecebido;
+                if (this.vida < 0) this.vida = 0;
+                return danoRecebido;
+            }
+        }
+
+        // Variáveis globais
+        let jogador = new Jogador();
+        let inimigoAtual = null;
+        let emCombate = false;
+
+        const tiposInimigos = [
+            { nome: "Goblin", vida: 30, ataque: 15, defesa: 2, exp: 25, ouro: 15 },
+            { nome: "Orc", vida: 50, ataque: 20, defesa: 5, exp: 40, ouro: 25 },
+            { nome: "Esqueleto", vida: 40, ataque: 18, defesa: 3, exp: 30, ouro: 20 },
+            { nome: "Lobo", vida: 35, ataque: 22, defesa: 1, exp: 35, ouro: 10 }
+        ];
+
+        function iniciarJogo() {
+            document.getElementById('menuScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            atualizarInterface();
+            adicionarLog("🎮 Sua aventura começou!");
+        }
+
+        function atualizarInterface() {
+            document.getElementById('playerName').textContent = `👤 ${jogador.nome} - Nível ${jogador.nivel}`;
+            document.getElementById('vidaText').textContent = `${jogador.vida}/${jogador.vidaMaxima}`;
+            document.getElementById('expText').textContent = `${jogador.experiencia}/${jogador.experienciaNecessaria}`;
+            document.getElementById('ataqueText').textContent = jogador.ataque;
+            document.getElementById('defesaText').textContent = jogador.defesa;
+            document.getElementById('ouroText').textContent = jogador.ouro;
+            document.getElementById('pocoesText').textContent = jogador.pocoes;
+
+            const vidaPercent = (jogador.vida / jogador.vidaMaxima) * 100;
+            const expPercent = (jogador.experiencia / jogador.experienciaNecessaria) * 100;
+            
+            document.getElementById('vidaBar').style.width = `${vidaPercent}%`;
+            document.getElementById('expBar').style.width = `${expPercent}%`;
+
+            if (inimigoAtual) {
+                document.getElementById('enemyName').textContent = `👹 ${inimigoAtual.nome}`;
+                document.getElementById('enemyVidaText').textContent = `${inimigoAtual.vida}/${inimigoAtual.vidaMaxima}`;
+                const enemyVidaPercent = (inimigoAtual.vida / inimigoAtual.vidaMaxima) * 100;
+                document.getElementById('enemyVidaBar').style.width = `${enemyVidaPercent}%`;
+            }
+        }
+
+        function adicionarLog(texto) {
+            const logContent = document.getElementById('logContent');
+            const logItem = document.createElement('div');
+            logItem.className = 'log-item';
+            logItem.textContent = texto;
+            logContent.insertBefore(logItem, logContent.firstChild);
+            
+            // Manter apenas 10 logs
+            while (logContent.children.length > 10) {
+                logContent.removeChild(logContent.lastChild);
+            }
+        }
+
+        function criarInimigoAleatorio() {
+            const tipo = tiposInimigos[Math.floor(Math.random() * tiposInimigos.length)];
+            const multiplicador = 1 + (jogador.nivel - 1) * 0.3;
+            
+            return new Inimigo(
+                tipo.nome,
+                Math.floor(tipo.vida * multiplicador),
+                Math.floor(tipo.ataque * multiplicador),
+                Math.floor(tipo.defesa * multiplicador),
+                Math.floor(tipo.exp * multiplicador),
+                Math.floor(tipo.ouro * multiplicador)
+            );
+        }
+
+        function explorar() {
+            const eventos = ['combate', 'tesouro', 'descanso', 'armadilha'];
+            const evento = eventos[Math.floor(Math.random() * eventos.length)];
+
+            switch (evento) {
+                case 'combate':
+                    iniciarCombate();
+                    break;
+                case 'tesouro':
+                    const ouro = Math.floor(Math.random() * 41) + 10;
+                    jogador.ouro += ouro;
+                    adicionarLog(`💰 Você encontrou ${ouro} moedas!`);
+                    break;
+                case 'descanso':
+                    const cura = Math.floor(Math.random() * 21) + 20;
+                    jogador.vida = Math.min(jogador.vidaMaxima, jogador.vida + cura);
+                    adicionarLog(`🏕️ Você descansou e recuperou ${cura} de vida!`);
+                    break;
+                case 'armadilha':
+                    const dano = Math.floor(Math.random() * 11) + 5;
+                    jogador.vida -= dano;
+                    if (jogador.vida < 0) jogador.vida = 0;
+                    adicionarLog(`⚠️ Armadilha! Você perdeu ${dano} de vida!`);
+                    break;
+            }
+
+            if (jogador.vida <= 0) {
+                gameOver();
+            }
+
+            atualizarInterface();
+        }
+
+        function iniciarCombate() {
+            inimigoAtual = criarInimigoAleatorio();
+            emCombate = true;
+            
+            document.getElementById('actionButtons').classList.add('hidden');
+            document.getElementById('combatButtons').classList.remove('hidden');
+            document.getElementById('enemyCard').classList.remove('hidden');
+            
+            adicionarLog(`⚔️ Um ${inimigoAtual.nome} apareceu!`);
+            atualizarInterface();
+        }
+
+        function atacar() {
+            if (!inimigoAtual) return;
+
+            const dano = jogador.atacar();
+            const danoRecebido = inimigoAtual.defender(dano);
+            adicionarLog(`💥 Você causou ${danoRecebido} de dano!`);
+
+            if (inimigoAtual.vida <= 0) {
+                const levelUp = jogador.ganharExperiencia(inimigoAtual.expDrop);
+                jogador.ouro += inimigoAtual.ouroDrop;
+                
+                adicionarLog(`🎉 ${inimigoAtual.nome} derrotado!`);
+                adicionarLog(`💰 +${inimigoAtual.ouroDrop} ouro, 🔮 +${inimigoAtual.expDrop} EXP`);
+                
+                if (levelUp) {
+                    adicionarLog(`🎉 LEVEL UP! Agora você é nível ${jogador.nivel}!`);
+                }
+
+                fimCombate();
+                atualizarInterface();
+                return;
+            }
+
+            // Inimigo contra-ataca
+            setTimeout(() => {
+                const danoInimigo = inimigoAtual.atacar();
+                const danoRecebidoJogador = jogador.defender(danoInimigo);
+                adicionarLog(`💢 ${inimigoAtual.nome} causou ${danoRecebidoJogador} de dano!`);
+
+                if (jogador.vida <= 0) {
+                    gameOver();
+                }
+
+                atualizarInterface();
+            }, 1000);
+        }
+
+        function usarPocao() {
+            const cura = jogador.usarPocao();
+            if (cura > 0) {
+                adicionarLog(`🧪 Você recuperou ${cura} de vida!`);
+                atualizarInterface();
+            } else {
+                adicionarLog("❌ Não é possível usar poção!");
+            }
+        }
+
+        function fugir() {
+            if (Math.random() < 0.3) {
+                adicionarLog("🏃 Você conseguiu fugir!");
+                fimCombate();
+            } else {
+                adicionarLog("❌ Não conseguiu fugir!");
+            }
+        }
+
+        function fimCombate() {
+            emCombate = false;
+            inimigoAtual = null;
+            
+            document.getElementById('actionButtons').classList.remove('hidden');
+            document.getElementById('combatButtons').classList.add('hidden');
+            document.getElementById('enemyCard').classList.add('hidden');
+        }
+
+        function descansar() {
+            if (jogador.vida < jogador.vidaMaxima) {
+                const cura = Math.floor(jogador.vidaMaxima / 2);
+                jogador.vida = Math.min(jogador.vidaMaxima, jogador.vida + cura);
+                adicionarLog(`😴 Você descansou e recuperou ${cura} de vida!`);
+                atualizarInterface();
+            } else {
+                adicionarLog("❌ Sua vida já está cheia!");
+            }
+        }
+
+        function gameOver() {
+            alert("💀 GAME OVER!\n\nVocê chegou ao nível " + jogador.nivel + "!\nObrigado por jogar!");
+            location.reload();
+        }
+
+        // Prevenir zoom no mobile
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        });
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
